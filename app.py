@@ -248,7 +248,12 @@ elif st.session_state.portal == "Teacher Portal":
         st.dataframe(all_logs, use_container_width=True)
     else:
         st.info("No attendance logs recorded yet.")
-
+        st.markdown("---")
+    if st.button("🗑️ Reset All Attendance Data", use_container_width=True):
+        if os.path.exists(FILE_NAME):
+            os.remove(FILE_NAME)
+        st.success("All attendance records have been completely wiped.")
+        st.rerun()
     st.markdown("---")
     if st.button("← Return to Main Menu"):
         navigate_to("Home")
