@@ -32,9 +32,21 @@ st.markdown("""
     h1, h2, h3 {
         color: #06B6D4 !important;
     }
-    .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+    /* Ensure buttons are fully visible with high contrast */
+    .stButton button {
+        background-color: #06B6D4 !important;
+        color: #121212 !important;
+        font-weight: bold;
+        border: none;
+    }
+    .stButton button:hover {
+        background-color: #22D3EE !important;
+        color: #121212 !important;
+    }
+    .stTextInput input, .stSelectbox div[data-baseweb="select"], .stDateInput input {
         background-color: #2A2A2A !important;
         color: #F9FAFB !important;
+        -webkit-text-fill-color: #F9FAFB !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -72,7 +84,6 @@ def recalculate_totals(student_data):
                 if status == "Present":
                     student_data["subjects"][sub]["attended"] += 1
 
-# Initialize Session State for Navigation
 if "portal" not in st.session_state:
     st.session_state.portal = "Home"
 
@@ -183,6 +194,28 @@ elif st.session_state.portal == "Teacher Portal":
                 save_data(data)
                 st.success("Attendance updated!")
                 st.rerun()
+
+    st.markdown("---")
+    st.markdown("### 📊 Live Class Attendance Overview")
+    if data["students"]:
+        summary_data = []
+        for roll, info in data["students"].items():
+            name = info.get("name")
+            for sub, stats in info.get("subjects", {}).items():
+                att = stats.get("attended", 0)
+                tot = stats.get("total", 0)
+                pct = f"{int((att/tot)*100)}%" if tot > 0 else "0%"
+                summary_data.append({
+                    "Roll No": roll,
+                    "Name": name,
+                    "Subject": sub,
+                    "Attended": att,
+                    "Total": tot,
+                    "Percentage": pct
+                })
+        st.dataframe(summary_data, use_container_width=True)
+    else:
+        st.info("No records to display yet.")
 
     st.markdown("---")
     if st.button("← Return to Main Menu"):
