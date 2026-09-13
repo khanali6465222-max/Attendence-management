@@ -6,7 +6,7 @@ from datetime import datetime
 FILE_NAME = "attendancemanagement_data.json"
 FACULTY_PASSWORD = "admin123"
 
-st.set_page_config(page_title="Attendance Management - Cyber Cyan Edition", page_width=520, layout="centered")
+st.set_page_config(page_title="Attendance Management - Cyber Cyan Edition", layout="centered")
 
 # --- CYBER CYAN DARK THEME CSS ---
 st.markdown("""
