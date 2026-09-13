@@ -67,7 +67,7 @@ def load_data():
         with open(FILE_NAME, 'r') as f:
             data = json.load(f)
     
-    # Automatically sync student subjects to remove old ones (like Python Practical)
+    # Clean up old subjects if present
     for roll, student in data.get("students", {}).items():
         if "subjects" in student:
             new_subs = {}
@@ -85,10 +85,6 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 def recalculate_totals(student_data):
-    for sub in DEFAULT_SUBJECTS:
-        if sub not in student_data["subjects"]:
-            student_data["subjects"][sub] = {"attended": 0, "total": 0}
-
     for sub in DEFAULT_SUBJECTS:
         student_data["subjects"][sub] = {"attended": 0, "total": 0}
 
@@ -233,6 +229,25 @@ elif st.session_state.portal == "Teacher Portal":
         st.dataframe(summary_data, use_container_width=True)
     else:
         st.info("No records to display yet.")
+
+    st.markdown("---")
+    st.markdown("### 📅 Attendance Log History (With Dates)")
+    all_logs = []
+    for roll, info in data["students"].items():
+        for log in info.get("logs", []):
+            if isinstance(log, dict):
+                all_logs.append({
+                    "Date": log.get("date"),
+                    "Roll No": roll,
+                    "Name": info.get("name"),
+                    "Subject": log.get("subject"),
+                    "Status": log.get("status")
+                })
+    if all_logs:
+        all_logs = sorted(all_logs, key=lambda x: x["Date"], reverse=True)
+        st.dataframe(all_logs, use_container_width=True)
+    else:
+        st.info("No attendance logs recorded yet.")
 
     st.markdown("---")
     if st.button("← Return to Main Menu"):
