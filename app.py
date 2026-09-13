@@ -51,19 +51,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def load_data():
-    if os.path.exists(FILE_NAME):
-        with open(FILE_NAME, 'r') as f:
-            return json.load(f)
-    return {
-        "students": {},
-        "notice": "Welcome to the Academic Portal! Ensure your attendance stays above 75%."
-    }
-
-def save_data(data):
-    with open(FILE_NAME, 'w') as f:
-        json.dump(data, f, indent=4)
-
 DEFAULT_SUBJECTS = [
     "Data Structures", 
     "Computer Networks", 
@@ -71,7 +58,37 @@ DEFAULT_SUBJECTS = [
     "Python"
 ]
 
+def load_data():
+    data = {
+        "students": {},
+        "notice": "Welcome to the Academic Portal! Ensure your attendance stays above 75%."
+    }
+    if os.path.exists(FILE_NAME):
+        with open(FILE_NAME, 'r') as f:
+            data = json.load(f)
+    
+    # Automatically sync student subjects to remove old ones (like Python Practical)
+    for roll, student in data.get("students", {}).items():
+        if "subjects" in student:
+            new_subs = {}
+            for sub in DEFAULT_SUBJECTS:
+                if sub in student["subjects"]:
+                    new_subs[sub] = student["subjects"][sub]
+                else:
+                    new_subs[sub] = {"attended": 0, "total": 0}
+            student["subjects"] = new_subs
+            
+    return data
+
+def save_data(data):
+    with open(FILE_NAME, 'w') as f:
+        json.dump(data, f, indent=4)
+
 def recalculate_totals(student_data):
+    for sub in DEFAULT_SUBJECTS:
+        if sub not in student_data["subjects"]:
+            student_data["subjects"][sub] = {"attended": 0, "total": 0}
+
     for sub in DEFAULT_SUBJECTS:
         student_data["subjects"][sub] = {"attended": 0, "total": 0}
 
