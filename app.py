@@ -68,7 +68,7 @@ DEFAULT_SUBJECTS = [
     "Data Structures", 
     "Computer Networks", 
     "Operating Systems", 
-    "Python Practical"
+    "Python"
 ]
 
 def recalculate_totals(student_data):
