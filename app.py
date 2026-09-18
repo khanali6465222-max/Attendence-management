@@ -22,17 +22,9 @@ st.markdown("""
         border: 1px solid #374151;
         margin-bottom: 15px;
     }
-    .metric-card {
-        background-color: #1E1E1E;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #374151;
-        text-align: center;
-    }
     h1, h2, h3 {
         color: #06B6D4 !important;
     }
-    /* Ensure buttons are fully visible with high contrast */
     .stButton button {
         background-color: #06B6D4 !important;
         color: #121212 !important;
@@ -67,7 +59,6 @@ def load_data():
         with open(FILE_NAME, 'r') as f:
             data = json.load(f)
     
-    # Clean up old subjects if present
     for roll, student in data.get("students", {}).items():
         if "subjects" in student:
             new_subs = {}
@@ -176,7 +167,7 @@ elif st.session_state.portal == "Teacher Portal":
         st.info("No active students registered.")
     else:
         rolls = list(data["students"].keys())
-        selected_roll = st.selectbox("Select Roll Number", rolls)
+        selected_roll = st.selectbox("Select Roll Number", rolls, format_func=lambda x: f"{x} - {data['students'][x]['name']}")
         selected_sub = st.selectbox("Select Subject", DEFAULT_SUBJECTS)
         session_date = st.date_input("Date", datetime.now()).strftime("%Y-%m-%d")
 
@@ -208,6 +199,20 @@ elif st.session_state.portal == "Teacher Portal":
                 st.success("Attendance updated!")
                 st.rerun()
 
+        st.markdown("---")
+        st.markdown("### ⚙️ Manage / Delete Student Records")
+        del_col1, del_col2 = st.columns([2, 1])
+        with del_col1:
+            student_to_delete = st.selectbox("Select Student to Remove", rolls, format_func=lambda x: f"{x} - {data['students'][x]['name']}", key="del_selectbox")
+        with del_col2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🗑️ Delete Student", use_container_width=True):
+                if student_to_delete in data["students"]:
+                    del data["students"][student_to_delete]
+                    save_data(data)
+                    st.success(f"Removed student {student_to_delete}")
+                    st.rerun()
+
     st.markdown("---")
     st.markdown("### 📊 Live Class Attendance Overview")
     if data["students"]:
@@ -230,30 +235,6 @@ elif st.session_state.portal == "Teacher Portal":
     else:
         st.info("No records to display yet.")
 
-    st.markdown("---")
-    st.markdown("### 📅 Attendance Log History (With Dates)")
-    all_logs = []
-    for roll, info in data["students"].items():
-        for log in info.get("logs", []):
-            if isinstance(log, dict):
-                all_logs.append({
-                    "Date": log.get("date"),
-                    "Roll No": roll,
-                    "Name": info.get("name"),
-                    "Subject": log.get("subject"),
-                    "Status": log.get("status")
-                })
-    if all_logs:
-        all_logs = sorted(all_logs, key=lambda x: x["Date"], reverse=True)
-        st.dataframe(all_logs, use_container_width=True)
-    else:
-        st.info("No attendance logs recorded yet.")
-        st.markdown("---")
-    if st.button("🗑️ Reset All Attendance Data", use_container_width=True):
-        if os.path.exists(FILE_NAME):
-            os.remove(FILE_NAME)
-        st.success("All attendance records have been completely wiped.")
-        st.rerun()
     st.markdown("---")
     if st.button("← Return to Main Menu"):
         navigate_to("Home")
@@ -304,3 +285,10 @@ elif st.session_state.portal == "Student Dashboard":
     if st.button("← Return to Main Menu"):
         navigate_to("Home")
         st.rerun()
+
+st.markdown("---")
+if st.button("🗑️ Reset All Attendance Data", use_container_width=True):
+    if os.path.exists(FILE_NAME):
+        os.remove(FILE_NAME)
+    st.success("All attendance records have been completely wiped.")
+    st.rerun()
