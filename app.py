@@ -263,10 +263,6 @@ elif st.session_state.portal == "Student Dashboard":
             st.markdown(f"### Hi, {stu['name']}")
             st.metric(label="Overall Attendance Percentage", value=f"{overall_pct}%", delta=f"{total_att}/{total_lec} Lectures")
 
-            if total_lec > 0 and overall_pct < 75:
-                needed = max(0, (3 * total_lec) - (4 * total_att))
-                st.warning(f"⚠️ Attend next {needed} consecutive lectures to reach 75%")
-
             st.markdown("### Subject Breakdowns")
             for subject, stats in subs.items():
                 att, tot = stats["attended"], stats["total"]
